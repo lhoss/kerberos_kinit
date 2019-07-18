@@ -1,0 +1,28 @@
+---
+# The kerberos realm
+kerberos_kinit_realm: EXAMPLE.LOCAL
+
+# The username under which kinit is run
+kerberos_kinit_user: "{{ ansible_user }}"
+
+# The kerberos principal. By default set from the username and the host's fqdn
+kerberos_kinit_principal: "{{ kerberos_kinit_user }}/{{ ansible_fqdn }}"
+
+# Optional kinit options. By default empty
+kerberos_kinit_opts:
+
+# The full path to the keytab OR a glob pattern, which will be scanned (using "ls -1t $glob") and the first result used as the keytab.
+kerberos_kinit_keytab_path: "{{ _kerberos_kinit_profiles[kerberos_kinit_keytab_type].keytab_dir }}"
+
+# Flag to enable the dynamic keytab lookup. By default it is enabled IF the keytab_path contains a '*'
+kerberos_kinit_dynamic_keytab: "{{ kerberos_kinit_keytab_path is search('\\*') }}"
+
+# Selects one of the supported keytab config types. Only relevant if you do not override the `kerberos_kinit_keytab_path` directly
+kerberos_kinit_keytab_type: hdp
+
+# (Internal) dict containing predefined directory glob patterns
+_kerberos_kinit_profiles:
+  cdh:
+    keytab_dir: "/run/cloudera-scm-agent/process/*{{ kerberos_kinit_user }}-*NODE*/{{ kerberos_kinit_user }}.keytab"
+  hdp:
+    keytab_dir: "/etc/security/keytabs/{{ kerberos_kinit_user }}.keytab"

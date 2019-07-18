@@ -1,0 +1,23 @@
+---
+# This include provides dynamic keytab lookup based on a directory glob pattern
+# If a keytab is found:  it sets it in the `_keytab` fact
+# If no keytab is found: it fails early
+- name: Handle dynamic keytab lookup
+  block:
+    - name: lookup the keytab using the glob pattern "{{ kerberos_kinit_keytab_path }}"
+      # Note: Need to run ls in a sub shell, with sudo powers, else it won't work
+      command: >
+        bash -c "ls -1t {{ kerberos_kinit_keytab_path}}"
+      # The 'ls' must be run as root due to ensure the dir can be scanned
+      become: True
+      register: result_keytabs_found
+      changed_when: False
+
+    - name: Verify a keytab was found
+      assert:
+        that:
+          - result_keytabs_found.stdout_lines |length >= 1
+        msg: "Could not find a keytab with the glob pattern '{{ kerberos_kinit_keytab_path }}'"
+
+    - set_fact:
+        _keytab: "{{ result_keytabs_found.stdout_lines[0] }}"

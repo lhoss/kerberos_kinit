@@ -1,0 +1,16 @@
+---
+## Self-contained include tasks (independent of the role) to run the kinit on a keytab
+## Include parameters:
+## - "_realm_name": the kerberos realm name
+## - "_principal": the principal without the realm
+## - "_keytab" (optional): the keytab file to create
+## - "_kinit_user": (optional) run the kinit as the given user
+## - "_kinit_opts": (optional) arguments to kinit
+
+- name: Run kinit for user
+  command: "kinit {{ _kinit_opts|default('') }} -kt {{ _keytab }} {{ _principal }}@{{ _realm_name }}"
+  become_user: "{{ _kinit_user | default(omit) }}"
+  become: "{{ _kinit_user is defined }}"
+  register: kinit_result
+  changed_when:
+    - kinit_result.stderr | default(False)

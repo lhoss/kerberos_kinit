@@ -1,0 +1,24 @@
+---
+- debug:
+    msg:
+      - "kerberos_kinit_user={{ kerberos_kinit_user }}"
+      - "kerberos_kinit_realm={{ kerberos_kinit_realm }}"
+      - "kerberos_kinit_dynamic_keytab={{kerberos_kinit_dynamic_keytab}}"
+      - "kerberos_kinit_keytab_path={{kerberos_kinit_keytab_path}}"
+    verbosity: 2
+
+- import_tasks: keytab_lookup.yml
+  when: kerberos_kinit_dynamic_keytab
+
+- name: Handle non dynamic keytab
+  set_fact:
+    _keytab: "{{ kerberos_kinit_keytab_path }}"
+  when: not kerberos_kinit_dynamic_keytab
+
+- import_tasks: kinit_kt.yml
+  vars:
+    _realm_name: "{{ kerberos_kinit_realm }}"
+    _principal: "{{ kerberos_kinit_principal }}"
+    _keytab: "{{ _keytab }}"
+    _kinit_user: "{{ kerberos_kinit_user }}"
+    _kinit_opts: "{{ kerberos_kinit_opts  }}"
