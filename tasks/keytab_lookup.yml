@@ -11,6 +11,7 @@
       # The 'ls' must be run as root due to ensure the dir can be scanned
       become: True
       register: result_keytabs_found
+      check_mode: False
       changed_when: False
 
     - name: Verify a keytab was found
